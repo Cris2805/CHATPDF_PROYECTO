@@ -1,0 +1,421 @@
+/* =======================
+   1. Reset / Box-sizing
+   ======================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* =======================
+   2. Fondo de Pantalla
+   ======================= */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-image: url("/static/fondo.jpg");
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  color: #333;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* =======================
+   3. Contenedor Principal
+   ======================= */
+.main-container {
+  display: flex;
+  gap: 20px;      /* Espacio entre panel izquierdo y derecho */
+  padding: 20px;  /* Espacio para ver el fondo alrededor */
+  height: 100%;
+}
+
+/* =======================
+   4. Estilos Comunes a Ambos Paneles
+   ======================= */
+.panel {
+  flex: 1;                                     /* Ancho igual entre ambos */
+  background-color: rgba(255, 255, 255, 0.95); /* Blanco semitransparente */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* =======================
+   5. Panel Izquierdo: PDF
+   ======================= */
+/* =======================
+   5. Panel Izquierdo: PDF (actualizado)
+   ======================= */
+.pdf-header {
+  display: flex;
+  justify-content: space-between;  /* logo1 a la izquierda, logo2 a la derecha */
+  align-items: center;             /* Centra verticalmente ambos logos */
+  padding: 16px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.pdf-logo {
+  height: 100px;    /* Ambos logos a 100px de alto */
+  width: auto;      
+  object-fit: contain;
+}
+
+/* 5.4) Contenedor de iframe PDF (resto sin cambios) */
+.pdf-container {
+  flex: 1;
+  position: relative;
+}
+
+/* 5.5) Estilo del iframe */
+.pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* =======================
+   6. Panel Derecho: Chat
+   ======================= */
+
+/* 6.1) Encabezado principal del chat */
+.chat-header {
+  padding: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  text-align: center;         /* Centra el texto “CHATBOT 🤖” */
+}
+
+/* 6.2) Subtítulo “PREGUNTAS SUGERIDAS ACERCA DEL DOCUMENTO” 
+      en cursiva y con línea divisoria */
+.suggestions-header {
+  font-size: 1.05rem;         /* Tamaño tipo subtítulo */
+  font-weight: normal;        /* No negrita */
+  font-style: italic;         /* Cursiva */
+  color: #333333;             /* Gris oscuro */
+  text-align: center;         /* Centrar el texto */
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;           /* Separación respecto al chat-header */
+  margin-bottom: 8px;         /* Separación antes de los botones */
+  padding-bottom: 6px;        /* Espacio entre texto y línea */
+  border-bottom: 1px solid #cccccc; /* Línea divisoria */
+}
+
+/* 6.3) Botones de sugerencia en una sola fila */
+.suggestion-buttons {
+  display: flex;
+  justify-content: center;       /* Centra los botones horizontalmente */
+  gap: 8px 12px;                 /* Espacio entre botones */
+  padding: 0 16px 12px 16px;     /* Espacio horizontal y margen inferior */
+  background-color: #fcfcfc;     /* Color de fondo suave */
+  border-bottom: 1px solid #e0e0e0;
+  /* Se elimina flex-wrap para mantener todos los botones en una sola fila */
+}
+
+.suggestion-btn {
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.suggestion-btn:hover {
+  background-color: #e0e0e0;
+  border-color: #b0b0b0;
+}
+
+/* =======================
+   7. Contenedor de Mensajes
+   ======================= */
+.messages-container {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+}
+
+/* =======================
+   8. Filas de Mensajes
+   ======================= */
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+/* Alinear cada fila según emisor */
+.message-row.bot {
+  justify-content: flex-start; /* TODO a la izquierda */
+}
+.message-row.user {
+  justify-content: flex-end;   /* TODO a la derecha */
+}
+
+/* =======================
+   9. Avatar (imagen)
+   ======================= */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-bot {
+  margin-right: 8px; /* Separación entre avatar y burbuja en mensajes del bot */
+}
+
+.avatar-user {
+  margin-left: 8px;  /* Separación entre burbuja y avatar en mensajes del usuario */
+}
+
+/* =======================
+   10. Burbujas de Mensaje
+   ======================= */
+.bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  line-height: 1.4;
+  font-size: 15px;
+  word-wrap: break-word;
+  position: relative;
+}
+
+/* Burbuja BOT (izquierda) */
+.bot-bubble {
+  background-color: #ffffff;  /* Blanco puro */
+  color: #333;
+  border: 1px solid #e0e0e0;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 16px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* Burbuja USUARIO (derecha) */
+.user-bubble {
+  background-color: #0078d4;  /* Azul intenso */
+  color: #fff;
+  border: 1px solid #005fa1;
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 16px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* =======================
+   11. Campo de Entrada
+   ======================= */
+.input-container {
+  padding: 10px 16px;
+  border-top: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  display: flex;
+  gap: 8px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.input-container input {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-container input:focus {
+  border-color: #0078d4;
+}
+
+.input-container button {
+  padding: 10px 16px;
+  font-size: 15px;
+  background-color: #0078d4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.input-container button:hover {
+  background-color: #005fa1;
+}
+
+/* =======================
+   12. Badge de Página (Reference Bubble)
+   ======================= */
+.reference-bubble {
+  display: inline-block;
+  border-radius: 24px;
+  cursor: pointer;
+  color: rgb(255, 255, 255);
+  background: rgb(156, 182, 218);
+  padding: 2px 6px;
+  font-size: 12px;
+  user-select: none;
+  margin-top: 6px; /* separa un poco el badge del texto */
+}
+
+.reference-bubble:hover {
+  background: rgb(120, 140, 170);
+}
+
+/* =======================
+   13. Estilos de Resaltado (“.highlight” en PDF.js)
+   ======================= */
+.highlight {
+  background-color: rgba(135, 206, 250, 0.4) !important;
+  border: none !important;
+  display: inline-block;
+}
+
+/* =======================
+   14. Contenedor de Scroll para el PDF
+   ======================= */
+#viewerContainer {
+  overflow-y: scroll;
+  width: 100%;
+  height: 100%;
+}
+
+/* =======================
+   15. Estilos de Carga
+   ======================= */
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+.loading .spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #0078d4; /* Color del spinner */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* =======================
+   16. Estilos de Error
+   ======================= */
+.error-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1001; /* Asegura que esté por encima de otros elementos */
+}
+
+.error-message h2 {
+  color: #d9534f; /* Rojo para el título */
+  margin-bottom: 10px;
+}
+
+.error-message p {
+  color: #333; /* Texto normal */
+  margin-bottom: 20px;
+}
+
+.error-message button {
+  padding: 10px 16px;
+  background-color: #d9534f; /* Rojo para el botón */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.error-message button:hover {
+  background-color: #c9302c; /* Rojo más oscuro al pasar el mouse */
+}
+
+/* =======================
+   17. Estilos de Éxito
+   ======================= */
+.success-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1001; /* Asegura que esté por encima de otros elementos */
+}
+
+.success-message h2 {
+  color: #5cb85c; /* Verde para el título */
+  margin-bottom: 10px;
+}
+
+.success-message p {
+  color: #333; /* Texto normal */
+  margin-bottom: 20px;
+}
+
+.success-message button {
+  padding: 10px 16px;
+  background-color: #5cb85c; /* Verde para el botón */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.success-message button:hover {
+  background-color: #4cae4c; /* Verde más oscuro al pasar el mouse */
+}
+
+/* =======================
+   18. Resaltar párrafo completo en PDF.js (modo BRUTO)
+   ======================= */
+.full-rect-highlight {
+  position: absolute;
+  left: 0;
+  pointer-events: none;
+  /* NOTA: top/width/height/background-color/z-index
+     se asignan dinámicamente desde el script de viewer.html */
+}

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChatPDF Integrado</title>
+  <!-- Enlazamos tu style.css personalizado -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+
+<body>
+  <div class="main-container">
+  <!-- =========================
+       Panel Izquierdo: Visor PDF
+       ========================= -->
+  <div class="panel panel-left">
+
+    <!-- Cabecera con logo1 a la izquierda y logo2 a la derecha -->
+    <div class="pdf-header">
+      <img
+        src="{{ url_for('static', filename='images/mi_logo.png') }}"
+        alt="Logo Izquierda"
+        class="pdf-logo"
+      />
+      <img
+        src="{{ url_for('static', filename='images/mi_logo2.png') }}"
+        alt="Logo Derecha"
+        class="pdf-logo"
+      />
+    </div>
+
+    <div class="pdf-container">
+      <iframe
+        id="pdfIframe"
+        class="pdf-iframe"
+        src="{{ url_for('static', filename='pdfjs/web/viewer.html') }}?file=../../pdfs/chatbot.pdf"
+      ></iframe>
+    </div>
+  </div>
+
+    <!-- =========================
+     Panel Derecho: Chat
+     ========================= -->
+<div class="panel panel-right">
+  <!-- Título del Chatbot -->
+  <div class="chat-header">CHATBOT 🤖</div>
+
+  <!-- Cabecera de subtítulo para preguntas sugeridas -->
+  <div class="suggestions-header">
+    PREGUNTAS SUGERIDAS ACERCA DEL DOCUMENTO
+  </div>
+
+  <!-- Botones de sugerencias -->
+  <div class="suggestion-buttons">
+    <button class="suggestion-btn">
+      ¿Qué importancia tiene el álgebra booleana de George Boole en la IA?
+    </button>
+    <button class="suggestion-btn">
+      ¿Cuál fue el papel del chatbot Eugene Goostman?
+    </button>
+    <button class="suggestion-btn">
+      ¿Qué tareas realiza la robótica cognitiva en entornos físicos?
+    </button>
+  </div>
+
+  <!-- Contenedor donde se insertan las burbujas de chat dinámicamente -->
+  <div class="messages-container" id="messagesContainer">
+    <!-- Aquí van las burbujas de chat -->
+  </div>
+
+  <!-- Campo de entrada + botón Enviar -->
+  <div class="input-container">
+    <input
+      type="text"
+      id="chatInput"
+      placeholder="Haz tu pregunta..."
+      autocomplete="off"
+    />
+    <button id="sendBtn" class="send-btn">Enviar</button>
+  </div>
+</div>
+    <!-- ========== JavaScript del Chat ========== -->
+    <script>
+      const iframe = document.getElementById('pdfIframe');
+      const messagesContainer = document.getElementById('messagesContainer');
+      const chatInput = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendBtn');
+
+      // Función para añadir un mensaje del usuario
+      function addUserMessage(texto) {
+        const rowUser = document.createElement('div');
+        rowUser.className = 'message-row user';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble user-bubble';
+        bubble.innerText = texto;
+        const avatar = document.createElement('img');
+        avatar.src = "{{ url_for('static', filename='images/user_avatar.avif') }}";
+        avatar.alt = 'Avatar Usuario';
+        avatar.className = 'avatar avatar-user';
+        rowUser.appendChild(bubble);
+        rowUser.appendChild(avatar);
+        messagesContainer.appendChild(rowUser);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      // Función para añadir un mensaje del bot
+      function addBotMessage(texto, isLoading = false) {
+        const rowBot = document.createElement('div');
+        rowBot.className = 'message-row bot';
+        const avatar = document.createElement('img');
+        avatar.src = "{{ url_for('static', filename='images/bot_avatar.jpg') }}";
+        avatar.alt = 'Avatar Bot';
+        avatar.className = 'avatar avatar-bot';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble bot-bubble';
+        if (isLoading) {
+          bubble.innerText = texto;
+          bubble.style.fontStyle = 'italic';
+          bubble.style.opacity = '0.6';
+        } else {
+          bubble.innerText = texto;
+        }
+        rowBot.appendChild(avatar);
+        rowBot.appendChild(bubble);
+        messagesContainer.appendChild(rowBot);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        return bubble;
+      }
+
+      // Manejo del clic en “Enviar”
+      sendBtn.addEventListener('click', () => {
+        const pregunta = chatInput.value.trim();
+        if (!pregunta) return;
+
+        // 1) Añadir burbuja de usuario
+        addUserMessage(pregunta);
+
+        // 2) Añadir burbuja “Buscando…” del bot
+        const loadingBubble = addBotMessage('Buscando en el PDF…', true);
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        sendBtn.innerText = '...';
+
+        // 3) Llamada al endpoint /api/chat de Flask
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pregunta: pregunta })
+        })
+          .then(resp => resp.json())
+          .then(data => {
+            // 4) Extraer el texto de la respuesta
+            let respuestaTexto = typeof data.respuesta === 'string'
+              ? data.respuesta
+              : (data.respuesta.respuesta || JSON.stringify(data.respuesta));
+
+            // 5) Datos de la página y el texto para resaltar
+            const pageNumber = (data.page !== undefined && data.page !== null)
+              ? data.page
+              : null;
+            const textToHighlight = data.text || "";
+
+            if (pageNumber !== null && typeof pageNumber === 'number') {
+              // Insertamos la burbuja de bot con el badge de página
+              loadingBubble.innerHTML = `
+              <div class="bot-text">${respuestaTexto}</div>
+              <div class="page-container">
+                <span 
+                  class="reference-bubble no-copy" 
+                  data-page="${pageNumber}"
+                  data-text="${encodeURIComponent(textToHighlight)}"
+                >
+                  ${pageNumber}
+                </span>
+              </div>
+            `;
+            } else {
+              // Nunca debería darse este caso si el backend cumple bien
+              loadingBubble.innerText = respuestaTexto;
+            }
+
+            loadingBubble.style.fontStyle = '';
+            loadingBubble.style.opacity = '1';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // 6) Enviar al iframe el mensaje “highlight”
+            if (
+              pageNumber !== null &&
+              typeof pageNumber === 'number' &&
+              textToHighlight.trim().length > 0
+            ) {
+              iframe.contentWindow.postMessage(
+                {
+                  action: 'highlight',
+                  page: pageNumber,
+                  text: textToHighlight
+                },
+                '*'
+              );
+            }
+
+            // 7) Al hacer clic en el badge, volvemos a enviar “goto” para que salte a la página
+            const badge = loadingBubble.querySelector('.reference-bubble');
+            if (badge) {
+              badge.addEventListener('click', () => {
+                const pageToGo = parseInt(badge.getAttribute('data-page'), 10);
+                iframe.contentWindow.postMessage(
+                  {
+                    action: 'goto',
+                    page: pageToGo
+                  },
+                  '*'
+                );
+              });
+            }
+          })
+          .catch(err => {
+            console.error('Error al llamar al chatbot:', err);
+            loadingBubble.innerText = 'Lo siento, hubo un error interno.';
+            loadingBubble.style.fontStyle = '';
+            loadingBubble.style.opacity = '1';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          })
+          .finally(() => {
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            sendBtn.innerText = 'Enviar';
+            chatInput.value = '';
+            chatInput.focus();
+          });
+      });
+
+      // Permitir enviar con “Enter”
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendBtn.click();
+      });
+
+      // Manejadores para botones de sugerencia
+      document.querySelectorAll('.suggestion-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          chatInput.value = btn.innerText;
+          sendBtn.click();
+        });
+      });
+    </script>
+</body>
+
+</html>
